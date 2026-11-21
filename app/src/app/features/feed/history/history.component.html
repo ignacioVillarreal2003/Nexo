@@ -1,0 +1,47 @@
+<app-page-header [title]="(favorites() ? 'nav.favorites' : 'nav.history') | t"/>
+
+<div class="list-toolbar">
+  <div class="search-box">
+    <app-icon name="search" [size]="16" class="search-box__icon"/>
+    <input
+      class="search-box__input"
+      type="search"
+      [value]="search()"
+      (input)="onSearch($any($event.target).value)"
+      [placeholder]="'feed.history.searchPlaceholder' | t"
+      [attr.aria-label]="'common.search' | t"
+    />
+  </div>
+  <app-filter-toggle [open]="filtersOpen()" [ariaLabel]="'feed.explore.filters' | t" (toggle)="openFilters()"/>
+</div>
+
+@if (loading() && !items().length) {
+  <div class="his__list">
+    @for (i of [1, 2, 3]; track i) {
+      <app-skeleton height="166px" radius="var(--radius-lg)"/>
+    }
+  </div>
+} @else if (items().length) {
+  <div class="his__list" [class.his__list--loading]="loading()">
+    @for (it of items(); track it.id) {
+      <app-feed-item-card
+        [item]="it"
+        [showDate]="true"
+        (toggleRead)="actions.toggleRead(items, $event)"
+        (toggleFavorite)="actions.toggleFavorite(items, $event, favorites())"
+        (opened)="actions.markOpened(items, $event)"
+      />
+    }
+  </div>
+  <app-pagination [page]="page()" [totalPages]="totalPages()" [first]="page() === 0" [last]="last()"
+                  (pageChange)="goTo($event)"/>
+} @else if (filtered()) {
+  <app-empty-state icon="search" [title]="'feed.history.noResults' | t">
+    <app-button variant="secondary" icon="filter-x" (click)="clearAll()">{{ 'feed.explore.clearFilters' | t }}</app-button>
+  </app-empty-state>
+} @else if (favorites()) {
+  <!-- Sin favoritos: la página queda vacía a propósito. -->
+} @else {
+  <app-empty-state icon="history" [title]="'feed.history.emptyTitle' | t"
+                   [description]="'feed.history.emptyDescription' | t"/>
+}

@@ -1,0 +1,43 @@
+@use 'mixins' as *;
+
+.cad__filters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-sm);
+  margin-bottom: var(--space-lg);
+}
+
+.cad__input {
+  height: 44px;
+  padding: 0 12px;
+  background: var(--surface);
+  border: none;
+  border-radius: var(--radius-md);
+  box-shadow: inset 0 0 0 1px var(--border);
+  font-family: var(--font-text);
+  font-size: var(--type-body-size);
+  color: var(--text);
+  outline: none;
+
+  &:focus {
+    box-shadow: inset 0 0 0 1.5px var(--accent-focus), 0 0 0 3px color-mix(in srgb, var(--accent) 15%, transparent);
+  }
+}
+
+.cad__loading {
+  display: grid;
+  place-items: center;
+  padding: var(--space-section);
+}
+
+.cad__title-cell {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 3px;
+  max-width: 520px;
+}
+
+.cad__reason {
+  color: var(--danger);
+}

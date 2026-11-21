@@ -1,0 +1,86 @@
+global:
+  scrape_interval: 15s
+  evaluation_interval: 15s
+
+rule_files:
+  - /etc/prometheus/alerts.yml
+
+alerting:
+  alertmanagers:
+    - static_configs:
+        - targets: ['nexo-alertmanager:9093']
+
+scrape_configs:
+  - job_name: authentication
+    metrics_path: /actuator/prometheus
+    basic_auth:
+      username: prometheus
+      password: prometheus
+    static_configs:
+      - targets: ['nexo-authentication-api:8090']
+        labels:
+          service: authentication
+
+  - job_name: notification
+    metrics_path: /actuator/prometheus
+    basic_auth:
+      username: prometheus
+      password: prometheus
+    static_configs:
+      - targets: ['nexo-notification-api:8091']
+        labels:
+          service: notification
+
+  - job_name: topic
+    metrics_path: /actuator/prometheus
+    basic_auth:
+      username: prometheus
+      password: prometheus
+    static_configs:
+      - targets: ['nexo-topic-api:8092']
+        labels:
+          service: topic
+
+  - job_name: subscription
+    metrics_path: /actuator/prometheus
+    basic_auth:
+      username: prometheus
+      password: prometheus
+    static_configs:
+      - targets: ['nexo-subscription-api:8093']
+        labels:
+          service: subscription
+
+  - job_name: content
+    metrics_path: /actuator/prometheus
+    basic_auth:
+      username: prometheus
+      password: prometheus
+    static_configs:
+      - targets: ['nexo-content-api:8094']
+        labels:
+          service: content
+
+  - job_name: delivery
+    metrics_path: /actuator/prometheus
+    basic_auth:
+      username: prometheus
+      password: prometheus
+    static_configs:
+      - targets: ['nexo-delivery-api:8095']
+        labels:
+          service: delivery
+
+  - job_name: ai
+    metrics_path: /metrics
+    static_configs:
+      - targets: ['nexo-ai-api:8096']
+        labels:
+          service: ai
+
+  - job_name: collector
+    metrics_path: /metrics
+    static_configs:
+      - targets: ['nexo-collector-api:8097']
+        labels:
+          service: collector

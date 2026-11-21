@@ -1,0 +1,55 @@
+name: nexo-delivery
+
+services:
+  delivery-api:
+    build: ../delivery
+    container_name: nexo-delivery-api
+    restart: unless-stopped
+    ports:
+      - "8095:8095"
+    environment:
+      SPRING_PROFILES_ACTIVE: ${SPRING_PROFILES_ACTIVE:-dev}
+      SERVER_PORT: "8095"
+      DB_URL: jdbc:postgresql://${POSTGRES_HOST:-nexo-postgres}:${POSTGRES_PORT:-5432}/${DELIVERY_DB:-nexo_delivery}
+      DB_USERNAME: ${POSTGRES_USER:-nexo}
+      DB_PASSWORD: ${POSTGRES_PASSWORD:-nexo}
+      KAFKA_BOOTSTRAP_SERVERS: ${KAFKA_BOOTSTRAP_SERVERS:-nexo-kafka:9092}
+      KAFKA_SECURITY_PROTOCOL: ${KAFKA_SECURITY_PROTOCOL:-PLAINTEXT}
+      KAFKA_TOPIC_REPLICAS: "${KAFKA_TOPIC_REPLICAS:-1}"
+      JWT_JSON_WEB_KEY_SET_URI: ${JWT_JSON_WEB_KEY_SET_URI:-http://nexo-authentication-api:8090/.well-known/json-web-key-set.json}
+      JWT_ISSUER: ${JWT_ISSUER:-nexo-authentication}
+      CORS_ALLOWED_ORIGINS: ${CORS_ALLOWED_ORIGINS:-http://localhost:4300}
+      OTLP_TRACING_ENDPOINT: ${OTLP_TRACING_ENDPOINT:-http://nexo-tempo:4318/v1/traces}
+      TRACING_SAMPLING_PROBABILITY: "${TRACING_SAMPLING_PROBABILITY:-0.1}"
+      TRACING_ENABLED: ${TRACING_ENABLED:-false}
+      MONITORING_USERNAME: ${MONITORING_USERNAME:-prometheus}
+      MONITORING_PASSWORD: ${MONITORING_PASSWORD:-prometheus}
+      AUTHENTICATION_SERVICE_BASE_URL: http://nexo-authentication-api:8090
+      AUTHENTICATION_SERVICE_CLIENT_ID: ${DELIVERY_SERVICE_CLIENT_ID:-c0000000-0000-0000-0000-000000000003}
+      AUTHENTICATION_SERVICE_CLIENT_SECRET: ${DELIVERY_SERVICE_CLIENT_SECRET:-nexo-delivery-dev-secret}
+      SUBSCRIPTION_SERVICE_BASE_URL: http://nexo-subscription-api:8093
+      TOPIC_SERVICE_BASE_URL: http://nexo-topic-api:8092
+      CONTENT_SERVICE_BASE_URL: http://nexo-content-api:8094
+      COLLECTOR_SERVICE_BASE_URL: http://nexo-collector-api:8097
+      USER_EVENTS_TOPIC: ${USER_EVENTS_TOPIC:-nexo.authentication.user-events}
+      NOTIFICATION_COMMANDS_TOPIC: ${NOTIFICATION_COMMANDS_TOPIC:-nexo.notifications.commands}
+      USER_SIMILARITY_THRESHOLD: "${USER_SIMILARITY_THRESHOLD:-0.88}"
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://localhost:8095/actuator/health/liveness"]
+      interval: 15s
+      timeout: 5s
+      retries: 10
+      start_period: 60s
+    deploy:
+      resources:
+        limits:
+          cpus: "1.00"
+          memory: 768M
+        reservations:
+          memory: 384M
+    networks:
+      - nexo
+
+networks:
+  nexo:
+    external: true

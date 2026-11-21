@@ -1,0 +1,13 @@
+@use 'mixins' as *;
+
+.his__list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-md);
+  transition: opacity var(--duration-fast) var(--ease-standard);
+}
+
+// While the next page loads, the current one stays in place, dimmed.
+.his__list--loading {
+  opacity: 0.55;
+}

@@ -1,0 +1,48 @@
+<app-page-header [title]="'settings.profile.title' | t"/>
+
+@if (user(); as u) {
+  <app-card class="pf__card">
+    <div class="pf__head">
+      <app-avatar [name]="u.fullName || u.email" [color]="color()" [size]="72"/>
+      <div class="pf__head-info">
+        <h3 class="pf__name">{{ u.fullName }}</h3>
+        <p class="pf__email">{{ u.email }}</p>
+      </div>
+    </div>
+
+    <form [formGroup]="form" (ngSubmit)="save()" class="pf__form" novalidate>
+      <div class="pf__fields">
+        <app-text-field
+          formControlName="firstName"
+          [label]="'auth.field.firstName' | t"
+          [placeholder]="'settings.profile.firstNamePlaceholder' | t"
+        />
+        <app-text-field
+          formControlName="lastName"
+          [label]="'auth.field.lastName' | t"
+          [placeholder]="'settings.profile.lastNamePlaceholder' | t"
+        />
+        <div class="pf__color-field">
+          <span class="pf__label" id="pf-color-label">{{ 'settings.profile.avatarColor' | t }}</span>
+          <div class="pf__colors" role="radiogroup" aria-labelledby="pf-color-label">
+            @for (c of colors; track c) {
+              <button type="button" class="pf__color" role="radio" [style.--swatch]="swatch(c)"
+                      [class.pf__color--on]="color() === c" [attr.aria-checked]="color() === c"
+                      [attr.aria-label]="('settings.profile.color.' + c) | t" [title]="('settings.profile.color.' + c) | t"
+                      (click)="pickColor(c)">
+                @if (color() === c) {
+                  <app-icon name="check" [size]="14"/>
+                }
+              </button>
+            }
+          </div>
+        </div>
+      </div>
+      <div class="pf__actions">
+        <app-button variant="secondary" icon="user-check" type="submit" [loading]="saving()">
+          {{ 'common.saveChanges' | t }}
+        </app-button>
+      </div>
+    </form>
+  </app-card>
+}

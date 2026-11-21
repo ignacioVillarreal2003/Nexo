@@ -1,0 +1,56 @@
+<app-page-header [title]="(isToday() ? 'nav.myDay' : 'feed.myDay.archiveTitle') | t">
+  @if (isToday()) {
+    <div class="day__header-actions">
+      <app-button variant="secondary" icon="mail-send" [loading]="emailing()" (click)="emailMe()"
+                  [attr.title]="'feed.myDay.emailMeHint' | t">
+        {{ 'feed.myDay.emailMe' | t }}
+      </app-button>
+      <app-button variant="secondary" icon="newspaper" [loading]="refreshing()" (click)="refresh()">
+        {{ 'feed.myDay.findMore' | t }}
+      </app-button>
+    </div>
+  }
+</app-page-header>
+
+<div class="list-toolbar">
+  <div class="search-box">
+    <app-icon name="search" [size]="16" class="search-box__icon"/>
+    <input
+      class="search-box__input"
+      type="search"
+      [value]="query()"
+      (input)="onQuery($any($event.target).value)"
+      [placeholder]="'feed.history.searchPlaceholder' | t"
+      [attr.aria-label]="'common.search' | t"
+    />
+  </div>
+  <app-filter-toggle [open]="filtersOpen()" [ariaLabel]="'feed.explore.filters' | t" (toggle)="openFilters()"/>
+</div>
+
+@if (loading()) {
+  <div class="day__list">
+    @for (i of [1, 2, 3]; track i) {
+      <app-skeleton height="166px" radius="var(--radius-lg)"/>
+    }
+  </div>
+} @else if (visible().length) {
+  <div class="day__list">
+    @for (it of pager.items(); track it.id) {
+      <app-feed-item-card
+        [item]="it"
+        (toggleRead)="actions.toggleRead(items, $event)"
+        (toggleFavorite)="actions.toggleFavorite(items, $event)"
+        (opened)="actions.markOpened(items, $event)"
+      />
+    }
+  </div>
+  <app-pagination [page]="pager.page()" [totalPages]="pager.totalPages()" [first]="pager.first()" [last]="pager.last()"
+                  (pageChange)="goTo($event)"/>
+} @else if (hasCriteria()) {
+  <app-empty-state icon="search" [title]="'feed.history.noResults' | t">
+    <app-button variant="secondary" icon="filter-x" (click)="clearAll()">{{ 'feed.explore.clearFilters' | t }}</app-button>
+  </app-empty-state>
+} @else if (!isToday()) {
+  <app-empty-state icon="sun" [title]="'feed.myDay.emptyDay' | t"/>
+}
+<!-- Hoy sin contenido: la página queda vacía; si sigue tópicos, el día se prepara solo (autoPrepare). -->

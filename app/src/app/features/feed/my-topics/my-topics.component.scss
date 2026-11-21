@@ -1,0 +1,109 @@
+@use 'mixins' as *;
+
+:host {
+  display: block;
+  container-type: inline-size;
+}
+
+.top__loading {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-xs);
+}
+
+// ---- table: one row per followed topic, same look as Explore -------------------------------------------------
+.mtt {
+  --cols: minmax(0, 2fr) 180px 150px 160px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+}
+
+.mtt__head,
+.mtt__row {
+  display: grid;
+  grid-template-columns: var(--cols);
+  align-items: center;
+  gap: var(--space-md);
+  padding-inline: 18px;
+}
+
+.mtt__head {
+  height: 40px;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--text-subtle);
+  background: var(--surface-sunken);
+  border-bottom: 1px solid var(--divider, var(--border));
+}
+
+.mtt__row {
+  min-height: 72px;
+  border-bottom: 1px solid var(--divider, var(--border));
+  transition: background var(--duration-fast) var(--ease-standard);
+
+  &:last-child {
+    border-bottom: 0;
+  }
+
+  &:hover {
+    background: var(--surface-muted);
+  }
+}
+
+.mtt__name-cell {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-width: 0;
+}
+
+.mtt__name {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-weight: 600;
+}
+
+.mtt__muted {
+  font-size: var(--type-caption-size);
+  color: var(--text-muted);
+  white-space: nowrap;
+}
+
+.mtt__stepper {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+}
+
+.mtt__value {
+  min-width: 26px;
+  text-align: center;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+
+.mtt__actions {
+  display: flex;
+  align-items: center;
+}
+
+@container (max-width: 760px) {
+  .mtt {
+    --cols: minmax(0, 1fr) 150px 150px;
+  }
+
+  .mtt__c-category {
+    display: none;
+  }
+}
+
+@container (max-width: 480px) {
+  .mtt {
+    --cols: minmax(0, 1fr) 110px 120px;
+  }
+}

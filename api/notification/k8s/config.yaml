@@ -1,0 +1,73 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: nexo-notification-config
+  labels:
+    app.kubernetes.io/name: nexo-notification
+data:
+  SERVER_PORT: "8082"
+  DB_URL: jdbc:postgresql://nexo-postgres:5432/nexo_notification?sslmode=require
+  DB_POOL_SIZE: "20"
+  REDIS_HOST: nexo-redis
+  REDIS_PORT: "6379"
+  REDIS_SSL: "true"
+  KAFKA_BOOTSTRAP_SERVERS: nexo-kafka:9093
+  KAFKA_SECURITY_PROTOCOL: SASL_SSL
+  KAFKA_TOPIC_REPLICAS: "3"
+  NOTIFICATION_COMMANDS_TOPIC: nexo.notifications.commands
+  NOTIFICATION_COMMANDS_PARTITIONS: "6"
+  NOTIFICATION_COMMANDS_CONCURRENCY: "3"
+  USER_EVENTS_TOPIC: nexo.authentication.user-events
+  USER_EVENTS_CONCURRENCY: "2"
+  MAIL_HOST: smtp.example.com
+  MAIL_PORT: "587"
+  MAIL_SMTP_AUTH: "true"
+  MAIL_SMTP_STARTTLS: "true"
+  EMAIL_FROM: no-reply@nexo.app
+  FRONTEND_BASE_URL: https://app.nexo.example
+  CORS_ALLOWED_ORIGINS: https://app.nexo.example
+  JWT_JSON_WEB_KEY_SET_URI: http://nexo-authentication:8080/.well-known/json-web-key-set.json
+  JWT_ISSUER: nexo-authentication
+  OTLP_TRACING_ENDPOINT: http://otel-collector:4318/v1/traces
+  TRACING_SAMPLING_PROBABILITY: "0.1"
+  STREAM_HEARTBEAT_INTERVAL: 20s
+  RATE_LIMIT_REQUESTS: "300"
+  EMAIL_PER_RECIPIENT_LIMIT: "20"
+  SCHEDULING_POOL_SIZE: "4"
+  SHUTDOWN_TIMEOUT: 30s
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: nexo-notification-secrets
+  labels:
+    app.kubernetes.io/name: nexo-notification
+type: Opaque
+stringData:
+  DB_USERNAME: replace-me
+  DB_PASSWORD: replace-me
+  REDIS_PASSWORD: replace-me
+  MAIL_USERNAME: replace-me
+  MAIL_PASSWORD: replace-me
+  SPRING_KAFKA_PROPERTIES_SASL_MECHANISM: SCRAM-SHA-512
+  SPRING_KAFKA_PROPERTIES_SASL_JAAS_CONFIG: replace-me
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: nexo-notification
+spec:
+  podSelector:
+    matchLabels:
+      app.kubernetes.io/name: nexo-notification
+  policyTypes: [Ingress]
+  ingress:
+    - from:
+        - podSelector:
+            matchLabels:
+              app.kubernetes.io/name: nexo-gateway
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: monitoring
+      ports:
+        - port: 8082

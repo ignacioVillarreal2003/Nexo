@@ -1,0 +1,59 @@
+<app-page-header [title]="'admin.catalog.title' | t"
+                 [subtitle]="'admin.catalog.subtitle' | t: {topics: topics().length, categories: categories().length}">
+  <app-button variant="secondary" icon="folder" (click)="editCategory(null)">{{ 'admin.catalog.newCategory' | t }}</app-button>
+  <app-button icon="plus" (click)="editTopic(null)">{{ 'admin.catalog.newTopic' | t }}</app-button>
+</app-page-header>
+
+@if (loading()) {
+  <div class="cat__loading"><app-spinner/></div>
+}
+
+@for (c of categories(); track c.id) {
+  <section class="cat__section">
+    <header class="cat__head">
+      <app-icon [name]="icon(c.icon)" [size]="18" class="cat__icon"/>
+      <h2 class="cat__title">{{ c.name }}</h2>
+      <app-badge [tone]="tone(c.status)">{{ 'admin.catalog.status.' + c.status | t }}</app-badge>
+      <span class="cat__spacer"></span>
+      <app-button variant="text" size="sm" (click)="toggleCategory(c)">
+        {{ (c.status === 'ACTIVE' ? 'admin.catalog.deactivate' : 'admin.catalog.activate') | t }}
+      </app-button>
+      <app-button variant="text" size="sm" (click)="editCategory(c)">{{ 'common.edit' | t }}</app-button>
+    </header>
+    <app-card flush>
+      <div class="ntab-wrap">
+        <table class="ntab">
+          <thead>
+            <tr>
+              <th>{{ 'admin.catalog.col.topic' | t }}</th>
+              <th>{{ 'admin.catalog.col.keywords' | t }}</th>
+              <th class="ntab__num">{{ 'admin.catalog.col.sources' | t }}</th>
+              <th class="ntab__num">{{ 'admin.catalog.col.relevance' | t }}</th>
+              <th>{{ 'admin.catalog.col.status' | t }}</th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (d of topicsOf(c.id); track d.topic.id) {
+              <tr>
+                <td><strong>{{ d.topic.name }}</strong></td>
+                <td class="ntab__muted cat__keywords">{{ d.topic.keywords.join(', ') }}</td>
+                <td class="ntab__num">{{ d.sourceIds.length }}</td>
+                <td class="ntab__num">{{ d.minimumRelevance }}</td>
+                <td><app-badge [tone]="tone(d.topic.status)">{{ 'admin.catalog.status.' + d.topic.status | t }}</app-badge></td>
+                <td class="ntab__actions">
+                  <app-button variant="text" size="sm" (click)="toggleTopic(d)">
+                    {{ (d.topic.status === 'ACTIVE' ? 'admin.catalog.deactivate' : 'admin.catalog.activate') | t }}
+                  </app-button>
+                  <app-button variant="secondary" size="sm" (click)="editTopic(d)">{{ 'common.edit' | t }}</app-button>
+                </td>
+              </tr>
+            } @empty {
+              <tr><td colspan="6" class="ntab__muted">{{ 'admin.catalog.noTopics' | t }}</td></tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    </app-card>
+  </section>
+}

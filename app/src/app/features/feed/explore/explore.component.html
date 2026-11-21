@@ -1,0 +1,64 @@
+<app-page-header [title]="'nav.explore' | t"/>
+
+<div class="list-toolbar">
+  <div class="search-box">
+    <app-icon name="search" [size]="16" class="search-box__icon"/>
+    <input
+      class="search-box__input"
+      type="search"
+      [value]="query()"
+      (input)="onQuery($any($event.target).value)"
+      [placeholder]="'feed.explore.searchPlaceholder' | t"
+      [attr.aria-label]="'common.search' | t"
+    />
+  </div>
+  <app-filter-toggle [open]="filtersOpen()" [ariaLabel]="'feed.explore.filters' | t" (toggle)="openFilters()"/>
+</div>
+
+@if (loading()) {
+  <div class="exp__loading">
+    @for (i of [1, 2, 3, 4, 5]; track i) {
+      <app-skeleton height="64px" radius="var(--radius-md)"/>
+    }
+  </div>
+} @else if (rows().length === 0) {
+  <app-empty-state icon="search" [title]="'feed.explore.noResults' | t">
+    @if (hasCriteria()) {
+      <app-button variant="secondary" icon="filter-x" (click)="clearAll()">{{ 'feed.explore.clearFilters' | t }}</app-button>
+    }
+  </app-empty-state>
+} @else {
+  <div class="ext">
+    <div class="ext__head" aria-hidden="true">
+      <span>{{ 'feed.explore.col.topic' | t }}</span>
+      <span class="ext__c-category">{{ 'feed.explore.col.category' | t }}</span>
+      <span>{{ 'feed.explore.col.actions' | t }}</span>
+    </div>
+    @for (t of pager.items(); track t.id) {
+      <div class="ext__row" tabindex="0" role="link" (click)="openDetail(t)" (keydown.enter)="openDetail(t)">
+        <span class="ext__name-cell">
+          <app-topic-badge [icon]="t.icon" [size]="44"/>
+          <span class="ext__text">
+            <span class="ext__name">{{ t.name }}</span>
+            @if (t.description) {
+              <span class="ext__desc">{{ t.description }}</span>
+            }
+          </span>
+        </span>
+        <span class="ext__muted ext__c-category">
+          {{ t.categoryName }}
+          @if (t.countryCode && t.kind !== 'COUNTRY') {
+            <span class="ext__country">· {{ countryLabel(t.countryCode) }}</span>
+          }
+        </span>
+        <span class="ext__actions">
+          <app-button variant="secondary" size="sm" icon="heart-plus" [disabled]="busy().has(t.id)" (click)="$event.stopPropagation(); toggle(t)">
+            {{ 'feed.explore.follow' | t }}
+          </app-button>
+        </span>
+      </div>
+    }
+  </div>
+  <app-pagination [page]="pager.page()" [totalPages]="pager.totalPages()" [first]="pager.first()" [last]="pager.last()"
+                  (pageChange)="pager.goTo($event)"/>
+}

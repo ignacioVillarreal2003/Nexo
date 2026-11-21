@@ -1,0 +1,68 @@
+<app-page-header [title]="'admin.contents.title' | t" [subtitle]="'admin.contents.count' | t: {count: totalElements()}"/>
+
+<div class="cad__filters">
+  <div class="search-box">
+    <app-icon name="search" [size]="16" class="search-box__icon"/>
+    <input class="search-box__input" type="search" (input)="onSearch($any($event.target).value)"
+           [placeholder]="'admin.contents.searchPlaceholder' | t" [attr.aria-label]="'common.search' | t"/>
+  </div>
+  <select class="cad__input" [value]="status()" (change)="onStatus($any($event.target).value)"
+          [attr.aria-label]="'admin.contents.status' | t">
+    <option value="">{{ 'admin.contents.allStatuses' | t }}</option>
+    @for (s of statuses; track s) {
+      <option [value]="s">{{ 'admin.contents.statusValue.' + s | t }}</option>
+    }
+  </select>
+  <select class="cad__input" [value]="topicId()" (change)="onTopic($any($event.target).value)"
+          [attr.aria-label]="'admin.contents.topic' | t">
+    <option value="">{{ 'admin.contents.allTopics' | t }}</option>
+    @for (t of topics(); track t.topic.id) {
+      <option [value]="t.topic.id">{{ t.topic.name }}</option>
+    }
+  </select>
+</div>
+
+@if (loading()) {
+  <div class="cad__loading"><app-spinner/></div>
+} @else {
+  <app-card flush>
+    <div class="ntab-wrap">
+      <table class="ntab">
+        <thead>
+          <tr>
+            <th>{{ 'admin.contents.col.content' | t }}</th>
+            <th>{{ 'admin.contents.col.topics' | t }}</th>
+            <th>{{ 'admin.contents.col.status' | t }}</th>
+            <th class="ntab__num">{{ 'admin.contents.col.quality' | t }}</th>
+            <th>{{ 'admin.contents.col.ai' | t }}</th>
+            <th>{{ 'admin.contents.col.collected' | t }}</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (c of rows(); track c.id) {
+            <tr class="ntab__row--click" (click)="open(c)">
+              <td class="cad__title-cell">
+                <strong>{{ c.title }}</strong>
+                <span class="ntab__muted">{{ c.sourceName }}</span>
+                @if (c.relation === 'UPDATE') {
+                  <app-badge tone="accent">{{ 'feed.item.update' | t }}</app-badge>
+                }
+                @if (c.rejectionReason) {
+                  <span class="cad__reason">{{ c.rejectionReason }}</span>
+                }
+              </td>
+              <td>{{ topicNamesOf(c) }}</td>
+              <td><app-badge [tone]="tone(c.status)">{{ 'admin.contents.statusValue.' + c.status | t }}</app-badge></td>
+              <td class="ntab__num">{{ c.qualityScore === null ? '–' : (c.qualityScore | number: '1.2-2') }}</td>
+              <td class="ntab__muted">{{ c.aiMode }}</td>
+              <td class="ntab__muted">{{ c.collectedAt | relativeTime }}</td>
+            </tr>
+          } @empty {
+            <tr><td colspan="6" class="ntab__muted">{{ 'admin.contents.empty' | t }}</td></tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  </app-card>
+  <app-pagination [page]="page()" [totalPages]="totalPages()" [first]="first()" [last]="last()" (pageChange)="goTo($event)"/>
+}

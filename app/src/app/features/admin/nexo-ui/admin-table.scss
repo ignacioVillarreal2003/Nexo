@@ -1,0 +1,57 @@
+@use 'mixins' as *;
+
+// Estilos compartidos por las tablas de administración de Nexo.
+.ntab {
+  width: 100%;
+  border-collapse: collapse;
+  @include type-caption;
+
+  th {
+    text-align: left;
+    @include type-fine;
+    font-weight: 600;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    color: var(--text-subtle);
+    padding: 10px 14px;
+    border-bottom: 1px solid var(--divider);
+    white-space: nowrap;
+  }
+
+  td {
+    padding: 12px 14px;
+    border-bottom: 1px solid var(--divider);
+    vertical-align: top;
+    color: var(--text);
+  }
+
+  tr:last-child td {
+    border-bottom: none;
+  }
+
+  .ntab__num {
+    text-align: right;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .ntab__muted {
+    color: var(--text-subtle);
+  }
+
+  .ntab__actions {
+    text-align: right;
+    white-space: nowrap;
+  }
+
+  tr.ntab__row--click {
+    cursor: pointer;
+
+    &:hover td {
+      background: var(--surface-muted);
+    }
+  }
+}
+
+.ntab-wrap {
+  overflow-x: auto;
+}

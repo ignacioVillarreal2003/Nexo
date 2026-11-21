@@ -1,0 +1,43 @@
+<app-page-header [title]="'admin.sources.title' | t" [subtitle]="'admin.sources.subtitle' | t">
+  <app-button icon="plus" (click)="edit(null)">{{ 'admin.sources.new' | t }}</app-button>
+</app-page-header>
+
+@if (loading()) {
+  <div class="src__loading"><app-spinner/></div>
+} @else {
+  <app-card flush>
+    <div class="ntab-wrap">
+      <table class="ntab">
+        <thead>
+          <tr>
+            <th>{{ 'admin.sources.col.name' | t }}</th>
+            <th>{{ 'admin.sources.col.type' | t }}</th>
+            <th>{{ 'admin.sources.col.url' | t }}</th>
+            <th>{{ 'admin.sources.col.configuration' | t }}</th>
+            <th>{{ 'admin.sources.col.status' | t }}</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (s of pager.items(); track s.id) {
+            <tr>
+              <td><strong>{{ s.name }}</strong></td>
+              <td><app-badge>{{ s.type }}</app-badge></td>
+              <td class="src__url">{{ s.url }}</td>
+              <td class="ntab__muted"><code>{{ s.configuration | json }}</code></td>
+              <td><app-badge [tone]="tone(s.status)">{{ 'admin.catalog.status.' + s.status | t }}</app-badge></td>
+              <td class="ntab__actions">
+                <app-button variant="text" size="sm" (click)="toggle(s)">
+                  {{ (s.status === 'ACTIVE' ? 'admin.catalog.deactivate' : 'admin.catalog.activate') | t }}
+                </app-button>
+                <app-button variant="secondary" size="sm" (click)="edit(s)">{{ 'common.edit' | t }}</app-button>
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  </app-card>
+  <app-pagination [page]="pager.page()" [totalPages]="pager.totalPages()" [first]="pager.first()" [last]="pager.last()"
+                  (pageChange)="pager.goTo($event)"/>
+}

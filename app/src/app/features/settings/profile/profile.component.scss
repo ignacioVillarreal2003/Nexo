@@ -1,0 +1,88 @@
+@use 'mixins' as *;
+
+.pf__head {
+  display: flex;
+  align-items: center;
+  gap: var(--space-lg);
+  padding-bottom: var(--space-lg);
+  border-bottom: 1px solid var(--divider);
+}
+
+.pf__name {
+  font-size: var(--type-tagline-size);
+  font-weight: 600;
+}
+
+.pf__email {
+  color: var(--text-muted);
+  font-size: var(--type-caption-size);
+  margin-top: 2px;
+}
+
+.pf__form {
+  margin-top: var(--space-lg);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-md);
+}
+
+// Nombre y apellido, uno debajo del otro.
+.pf__fields {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-md);
+}
+
+.pf__actions {
+  display: flex;
+  justify-content: flex-end;
+}
+
+
+// Colores para el avatar: una fila de círculos, el elegido con un check.
+.pf__label {
+  display: block;
+  margin-bottom: 6px;
+  @include type-caption-strong;
+  color: var(--text);
+}
+
+// Con el mismo aspecto que un input: caja de 44px con borde, los círculos adentro.
+.pf__colors {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 10px;
+  min-height: 44px;
+  padding: 6px 12px;
+  background: var(--surface);
+  border-radius: var(--radius-md);
+  box-shadow: inset 0 0 0 1px var(--border);
+}
+
+.pf__color {
+  display: grid;
+  place-items: center;
+  width: 24px;
+  height: 24px;
+  padding: 0;
+  border: none;
+  border-radius: 50%;
+  background: var(--swatch);
+  color: #fff;
+  cursor: pointer;
+  transition: transform var(--duration-fast) var(--ease-standard), box-shadow var(--duration-fast) var(--ease-standard);
+
+  &:hover {
+    transform: scale(1.08);
+  }
+
+  &:focus-visible {
+    outline: none;
+    box-shadow: 0 0 0 2px var(--surface), 0 0 0 4px var(--swatch);
+  }
+}
+
+.pf__color--on {
+  box-shadow: 0 0 0 2px var(--surface), 0 0 0 4px var(--swatch);
+}

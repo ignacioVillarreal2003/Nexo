@@ -1,0 +1,12 @@
+fastapi>=0.115,<1
+uvicorn[standard]>=0.30
+pydantic>=2.9,<3
+pydantic-settings>=2.5,<3
+google-genai>=3.0,<4
+prometheus-fastapi-instrumentator>=7
+numpy>=2.0
+# Lectura de la nota original para el informe completo.
+httpx>=0.27
+trafilatura>=2.0
+pyjwt[crypto]>=2.9
+# sentence-transformers y torch (CPU) se instalan aparte: ver Dockerfile y requirements-ml.txt.

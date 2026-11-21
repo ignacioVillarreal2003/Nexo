@@ -1,0 +1,185 @@
+<app-page-header [title]="'admin.pipeline.title' | t" [subtitle]="'admin.pipeline.subtitle' | t">
+  @if (canManagePipeline) {
+    <app-button icon="download" [loading]="collection()?.running ?? false" (click)="collect()">
+      {{ 'admin.pipeline.collectNow' | t }}
+    </app-button>
+  }
+  @if (canDeliver) {
+    <app-button variant="secondary" icon="share" [loading]="delivering()" (click)="deliver()">
+      {{ 'admin.pipeline.deliverNow' | t }}
+    </app-button>
+  }
+</app-page-header>
+
+@if (collection()?.running) {
+  <div class="pip__running">
+    {{ 'admin.pipeline.running' | t: {
+      done: collection()!.topicsDone, planned: collection()!.topicsPlanned, published: collection()!.itemsPublished
+    } }}
+  </div>
+}
+
+@if (!collection()?.running && processingRuns().length) {
+  <div class="pip__running">{{ 'admin.pipeline.aiWorking' | t: {count: processingRuns()[0].itemsCollected - processingRuns()[0].itemsProcessed} }}</div>
+}
+
+@if (canReadStatistics) {
+  <div class="pip__stats">
+    <app-card class="pip__stat">
+      <span class="pip__stat-value">{{ subscriptionStats()?.subscribedUsers ?? '–' }}</span>
+      <span class="pip__stat-label">{{ 'admin.pipeline.stats.users' | t: {count: subscriptionStats()?.activeSubscriptions ?? 0} }}</span>
+    </app-card>
+    <app-card class="pip__stat">
+      <span class="pip__stat-value">{{ contentStats()?.publishedLast24Hours ?? '–' }}</span>
+      <span class="pip__stat-label">{{ 'admin.pipeline.stats.published' | t: {week: contentStats()?.publishedLast7Days ?? 0} }}</span>
+    </app-card>
+    <app-card class="pip__stat">
+      <span class="pip__stat-value">{{ deliveryStats()?.deliveriesLast24Hours ?? '–' }}</span>
+      <span class="pip__stat-label">{{ 'admin.pipeline.stats.delivered' | t: {rate: readRate()} }}</span>
+    </app-card>
+    <app-card class="pip__stat">
+      <span class="pip__stat-value">{{ statusCount('DUPLICATE') }}</span>
+      <span class="pip__stat-label">{{ 'admin.pipeline.stats.duplicates' | t: {rejected: statusCount('REJECTED')} }}</span>
+    </app-card>
+  </div>
+
+  @if (subscriptionStats()?.topTopics?.length) {
+    <section class="pip__section">
+      <h2 class="pip__title">{{ 'admin.pipeline.topTopics' | t }}</h2>
+      <div class="pip__chips">
+        @for (t of subscriptionStats()!.topTopics; track t.topicId) {
+          <app-badge>{{ t.topicName }} · {{ t.subscribers }}</app-badge>
+        }
+      </div>
+    </section>
+  }
+}
+
+<section class="pip__section">
+  <h2 class="pip__title">{{ 'admin.pipeline.runs' | t }}</h2>
+  <p class="pip__hint">{{ 'admin.pipeline.runsHint' | t }}</p>
+  <app-card flush>
+    <div class="ntab-wrap">
+      <table class="ntab">
+        <thead>
+          <tr>
+            <th>{{ 'admin.pipeline.col.started' | t }}</th>
+            <th>{{ 'admin.pipeline.col.duration' | t }}</th>
+            <th>{{ 'admin.pipeline.col.trigger' | t }}</th>
+            <th>{{ 'admin.pipeline.col.status' | t }}</th>
+            <th class="ntab__num">{{ 'admin.pipeline.col.topics' | t }}</th>
+            <th class="ntab__num">{{ 'admin.pipeline.col.collected' | t }}</th>
+            <th class="ntab__num">{{ 'admin.pipeline.col.published' | t }}</th>
+            <th class="ntab__num">{{ 'admin.pipeline.col.duplicates' | t }}</th>
+            <th class="ntab__num">{{ 'admin.pipeline.col.rejected' | t }}</th>
+            <th class="ntab__num">{{ 'admin.pipeline.col.failed' | t }}</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (r of runs(); track r.id) {
+            <tr>
+              <td>{{ r.startedAt | date: 'd MMM, HH:mm' }}</td>
+              <td class="ntab__muted">{{ duration(r.startedAt, r.finishedAt) }}</td>
+              <td><app-badge [tone]="tone(r.trigger)">{{ 'admin.pipeline.trigger.' + r.trigger | t }}</app-badge></td>
+              <td>
+                <app-badge [tone]="tone(r.status)">{{ 'admin.pipeline.status.' + r.status | t }}</app-badge>
+                @if (pending(r) > 0) {
+                  <div class="pip__progress" [attr.title]="'admin.pipeline.aiProgress' | t: {done: r.itemsProcessed, total: r.itemsCollected}">
+                    <div class="pip__progress-bar" role="progressbar" aria-valuemin="0" aria-valuemax="100"
+                         [attr.aria-valuenow]="progress(r)" [style.width.%]="progress(r)"></div>
+                  </div>
+                  <span class="pip__progress-label">{{ 'admin.pipeline.aiProgress' | t: {done: r.itemsProcessed, total: r.itemsCollected} }}</span>
+                }
+              </td>
+              <td class="ntab__num">{{ r.topicsPlanned }}</td>
+              <td class="ntab__num">{{ r.itemsCollected }}</td>
+              <td class="ntab__num">{{ r.itemsPublished }}</td>
+              <td class="ntab__num">{{ r.itemsDuplicate }}</td>
+              <td class="ntab__num">{{ r.itemsRejected }}</td>
+              <td class="ntab__num">{{ r.itemsFailed }}</td>
+              <td class="ntab__actions">
+                <app-button variant="text" size="sm" (click)="showErrors(r.id)">{{ 'admin.pipeline.errors' | t }}</app-button>
+              </td>
+            </tr>
+          } @empty {
+            <tr><td colspan="11" class="ntab__muted">{{ 'admin.pipeline.noRuns' | t }}</td></tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  </app-card>
+</section>
+
+<section class="pip__section">
+  <div class="pip__title-row">
+    <h2 class="pip__title">{{ (selectedRun() ? 'admin.pipeline.runErrors' : 'admin.pipeline.recentErrors') | t }}</h2>
+    @if (selectedRun()) {
+      <app-button variant="text" size="sm" (click)="showErrors(null)">{{ 'admin.pipeline.allErrors' | t }}</app-button>
+    }
+  </div>
+  <app-card flush>
+    <div class="ntab-wrap">
+      <table class="ntab">
+        <thead>
+          <tr>
+            <th>{{ 'admin.pipeline.col.when' | t }}</th>
+            <th>{{ 'admin.pipeline.col.stage' | t }}</th>
+            <th>{{ 'admin.pipeline.col.source' | t }}</th>
+            <th>{{ 'admin.pipeline.col.message' | t }}</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (e of errors(); track e.id) {
+            <tr>
+              <td class="ntab__muted">{{ e.createdAt | relativeTime }}</td>
+              <td><app-badge tone="danger">{{ e.stage }}</app-badge></td>
+              <td>{{ e.source }}</td>
+              <td class="pip__message">{{ e.message }}</td>
+            </tr>
+          } @empty {
+            <tr><td colspan="4" class="ntab__muted">{{ 'admin.pipeline.noErrors' | t }}</td></tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  </app-card>
+</section>
+
+@if (canDeliver) {
+  <section class="pip__section">
+    <h2 class="pip__title">{{ 'admin.pipeline.deliveries' | t }}</h2>
+    <app-card flush>
+      <div class="ntab-wrap">
+        <table class="ntab">
+          <thead>
+            <tr>
+              <th>{{ 'admin.pipeline.col.started' | t }}</th>
+              <th>{{ 'admin.pipeline.col.trigger' | t }}</th>
+              <th>{{ 'admin.pipeline.col.status' | t }}</th>
+              <th class="ntab__num">{{ 'admin.pipeline.col.users' | t }}</th>
+              <th class="ntab__num">{{ 'admin.pipeline.col.deliveries' | t }}</th>
+              <th class="ntab__num">{{ 'admin.pipeline.col.failed' | t }}</th>
+              <th>{{ 'admin.pipeline.col.notes' | t }}</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (d of deliveryRuns(); track d.id) {
+              <tr>
+                <td>{{ d.startedAt | date: 'd MMM, HH:mm' }}</td>
+                <td><app-badge [tone]="tone(d.trigger)">{{ 'admin.pipeline.trigger.' + d.trigger | t }}</app-badge></td>
+                <td><app-badge [tone]="tone(d.status)">{{ 'admin.pipeline.status.' + d.status | t }}</app-badge></td>
+                <td class="ntab__num">{{ d.usersProcessed }}</td>
+                <td class="ntab__num">{{ d.deliveriesCreated }}</td>
+                <td class="ntab__num">{{ d.errors }}</td>
+                <td class="pip__message ntab__muted">{{ d.notes }}</td>
+              </tr>
+            } @empty {
+              <tr><td colspan="7" class="ntab__muted">{{ 'admin.pipeline.noDeliveries' | t }}</td></tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    </app-card>
+  </section>
+}

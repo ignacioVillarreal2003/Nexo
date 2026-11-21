@@ -1,0 +1,36 @@
+@use 'mixins' as *;
+
+.cat__loading {
+  display: grid;
+  place-items: center;
+  padding: var(--space-section);
+}
+
+.cat__section {
+  margin-bottom: var(--space-xl);
+}
+
+.cat__head {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: var(--space-xs);
+  margin-bottom: var(--space-sm);
+}
+
+.cat__icon {
+  color: var(--accent);
+}
+
+.cat__title {
+  @include type-tagline;
+  margin: 0;
+}
+
+.cat__spacer {
+  flex: 1;
+}
+
+.cat__keywords {
+  max-width: 340px;
+}

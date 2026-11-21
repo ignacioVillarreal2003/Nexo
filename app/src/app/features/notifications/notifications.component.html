@@ -1,0 +1,87 @@
+<div class="ntf app-container">
+  <app-page-header [title]="'nav.notifications' | t">
+    <app-button variant="secondary" icon="check" [disabled]="unread() === 0" (click)="markAll()">
+      {{ 'notifications.markAllRead' | t }}
+    </app-button>
+  </app-page-header>
+
+  <div class="list-toolbar">
+    <div class="search-box">
+      <app-icon name="search" [size]="16" class="search-box__icon"/>
+      <input
+        class="search-box__input"
+        type="search"
+        [formControl]="search"
+        [placeholder]="'notifications.filter.searchPlaceholder' | t"
+        [attr.aria-label]="'common.search' | t"
+      />
+    </div>
+    <app-filter-toggle [open]="filtersOpen()" [ariaLabel]="'notifications.filter.more' | t" (toggle)="openFilters()"/>
+  </div>
+
+  @if (loading() && items().length === 0) {
+    <div class="ntf__loading">
+      @for (i of [1, 2, 3, 4]; track i) {
+        <app-skeleton height="64px" radius="var(--radius-md)"/>
+      }
+    </div>
+  } @else if (items().length === 0) {
+    <app-empty-state
+      icon="bell"
+      [title]="'common.empty' | t"
+      [description]="(hasFilters() ? 'notifications.emptyFiltered' : 'notifications.emptyDescription') | t"
+    >
+      @if (hasFilters()) {
+        <app-button variant="ghost" (click)="clearFilters()">{{ 'notifications.filter.clear' | t }}</app-button>
+      }
+    </app-empty-state>
+  } @else {
+    <div class="ntt">
+      <div class="ntt__head" aria-hidden="true">
+        <span>{{ 'notifications.col.notification' | t }}</span>
+        <span class="ntt__c-category">{{ 'notifications.filter.category' | t }}</span>
+        <span class="ntt__c-severity">{{ 'notifications.filter.severity' | t }}</span>
+        <span class="ntt__c-time">{{ 'notifications.col.when' | t }}</span>
+        <span>{{ 'notifications.col.actions' | t }}</span>
+      </div>
+      @for (n of items(); track n.id) {
+        <div class="ntt__row" [class.ntt__row--unread]="!n.read" tabindex="0" role="link"
+             (click)="open(n)" (keydown.enter)="open(n)">
+          <span class="ntt__main">
+            <span class="ntt__text">
+              <span class="ntt__title">{{ n.title }}</span>
+              @if (n.body) {
+                <span class="ntt__body">{{ n.body }}</span>
+              }
+            </span>
+          </span>
+          <span class="ntt__muted ntt__c-category">{{ categoryLabel(n.category) }}</span>
+          <span class="ntt__c-severity">
+            <app-badge [tone]="toneFor(n.severity)">{{ ('notifications.severity.' + n.severity) | t }}</app-badge>
+          </span>
+          <span class="ntt__muted ntt__c-time" [attr.title]="n.createdAt">{{ n.createdAt | relativeTime }}</span>
+          <span class="ntt__actions">
+            @if (!n.read) {
+              <button class="ntt__action" type="button" [title]="'notifications.markRead' | t"
+                      [attr.aria-label]="'notifications.markRead' | t" (click)="$event.stopPropagation(); markRead(n)">
+                <app-icon name="check" [size]="16"/>
+              </button>
+            }
+            <button class="ntt__action ntt__action--danger" type="button" [disabled]="busyId() === n.id"
+                    [title]="'common.delete' | t" [attr.aria-label]="'common.delete' | t"
+                    (click)="$event.stopPropagation(); remove(n)">
+              <app-icon name="trash" [size]="16"/>
+            </button>
+          </span>
+        </div>
+      }
+    </div>
+    <app-pagination
+      [page]="page()"
+      [totalPages]="totalPages()"
+      [first]="first()"
+      [last]="last()"
+      (pageChange)="onPageChange($event)"
+    />
+  }
+</div>

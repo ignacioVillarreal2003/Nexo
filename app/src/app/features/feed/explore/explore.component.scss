@@ -1,0 +1,120 @@
+@use 'mixins' as *;
+
+:host {
+  display: block;
+  container-type: inline-size;
+}
+
+.exp__loading {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-xs);
+}
+
+// ---- table: one row per topic, headed by its columns ---------------------------------------------------------
+.ext {
+  --cols: minmax(0, 2.6fr) 220px 120px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+}
+
+.ext__head,
+.ext__row {
+  display: grid;
+  grid-template-columns: var(--cols);
+  align-items: center;
+  gap: var(--space-md);
+  padding-inline: 18px;
+}
+
+.ext__head {
+  height: 40px;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--text-subtle);
+  background: var(--surface-sunken);
+  border-bottom: 1px solid var(--divider, var(--border));
+}
+
+.ext__row {
+  min-height: 72px;
+  border-bottom: 1px solid var(--divider, var(--border));
+  cursor: pointer;
+  transition: background var(--duration-fast) var(--ease-standard);
+
+  &:last-child {
+    border-bottom: 0;
+  }
+
+  &:hover {
+    background: var(--surface-muted);
+  }
+
+  &:focus-visible {
+    outline: none;
+    box-shadow: inset var(--focus-ring);
+  }
+}
+
+.ext__name-cell {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-width: 0;
+}
+
+.ext__text {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.ext__name {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-weight: 600;
+}
+
+.ext__desc {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 13px;
+  color: var(--text-subtle);
+}
+
+.ext__muted {
+  font-size: var(--type-caption-size);
+  color: var(--text-muted);
+}
+
+.ext__actions {
+  display: flex;
+  align-items: center;
+}
+
+@container (max-width: 760px) {
+  .ext {
+    --cols: minmax(0, 1fr) 120px;
+  }
+
+  .ext__c-category {
+    display: none;
+  }
+}
+
+@container (max-width: 520px) {
+  .ext {
+    --cols: minmax(0, 1fr) 110px;
+  }
+}
+
+.ext__country {
+  color: var(--text-subtle);
+}

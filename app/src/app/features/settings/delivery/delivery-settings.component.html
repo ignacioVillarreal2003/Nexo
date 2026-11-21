@@ -1,0 +1,24 @@
+<app-page-header [title]="'settings.delivery.title' | t"/>
+
+@if (loading()) {
+  <div class="dls__loading"><app-spinner/></div>
+} @else {
+  <app-card>
+    <form class="dls__form" [formGroup]="form" (ngSubmit)="save()">
+      <app-select-field formControlName="timezone" [label]="'settings.delivery.timezone' | t" [options]="zoneOptions()"/>
+
+      <app-select-field formControlName="deliveryHour" [label]="'settings.delivery.hour' | t" [options]="hourOptions"/>
+
+      <label class="dls__check">
+        <app-checkbox formControlName="paused"/>
+        <span class="dls__label">{{ 'settings.delivery.paused' | t }}</span>
+      </label>
+
+      <div class="dls__actions">
+        <app-button variant="secondary" icon="calendar-check" type="submit" [loading]="saving()" [disabled]="form.invalid || form.pristine">
+          {{ 'common.save' | t }}
+        </app-button>
+      </div>
+    </form>
+  </app-card>
+}

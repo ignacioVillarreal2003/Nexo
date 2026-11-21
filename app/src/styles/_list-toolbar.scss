@@ -1,0 +1,55 @@
+// Barra de búsqueda y filtros de los listados: un solo estilo para que el buscador mida lo mismo en todas las
+// pantallas (Mi día, Explorar, Historial, Favoritos, Notificaciones...).
+//
+//   <div class="list-toolbar">
+//     <div class="search-box">
+//       <app-icon name="search" [size]="16" class="search-box__icon"/>
+//       <input class="search-box__input" type="search" .../>
+//     </div>
+//     <app-filter-toggle .../>
+//   </div>
+
+.list-toolbar {
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+  margin-bottom: var(--space-lg);
+}
+
+.search-box {
+  position: relative;
+  display: flex;
+  align-items: center;
+  flex: 1;
+  min-width: 0;
+}
+
+.search-box__icon {
+  position: absolute;
+  left: 14px;
+  color: var(--text-subtle);
+  pointer-events: none;
+}
+
+.search-box__input {
+  width: 100%;
+  height: 44px;
+  padding: 0 16px 0 40px;
+  background: var(--surface);
+  border: none;
+  border-radius: var(--radius-md);
+  box-shadow: inset 0 0 0 1px var(--border);
+  font-family: var(--font-text);
+  font-size: var(--type-body-size);
+  color: var(--text);
+  outline: none;
+  transition: box-shadow var(--duration-fast) var(--ease-standard);
+
+  &::placeholder {
+    color: var(--text-subtle);
+  }
+
+  &:focus {
+    box-shadow: inset 0 0 0 1.5px var(--accent-focus), 0 0 0 3px color-mix(in srgb, var(--accent) 15%, transparent);
+  }
+}

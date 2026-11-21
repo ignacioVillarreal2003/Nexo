@@ -1,0 +1,16 @@
+<div class="feed" [class.feed--expanded]="expanded()">
+  <app-icon-rail
+    [items]="railItems()"
+    [title]="title()"
+    [expandLabel]="expandLabel()"
+    [collapseLabel]="collapseLabel()"
+    [storageKey]="railStorageKey"
+    [(expanded)]="expanded"
+  />
+
+  <div class="feed-content">
+    <div class="app-container">
+      <router-outlet/>
+    </div>
+  </div>
+</div>

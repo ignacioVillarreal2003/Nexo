@@ -1,0 +1,21 @@
+# Secretos: cada entorno tiene su propio .env (ver los .env.example)
+.env
+
+# Java
+**/target/
+
+# Python
+**/.venv/
+**/__pycache__/
+**/.pytest_cache/
+
+# Angular
+**/node_modules/
+app/dist/
+app/.angular/
+
+# Herramientas locales
+.claude/
+.idea/
+.vscode/
+*.log

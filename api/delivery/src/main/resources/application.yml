@@ -1,0 +1,234 @@
+spring:
+  application:
+    name: delivery
+  profiles:
+    active: ${SPRING_PROFILES_ACTIVE:dev}
+
+  datasource:
+    url: ${DB_URL:jdbc:postgresql://localhost:5433/nexo_delivery}
+    username: ${DB_USERNAME:nexo}
+    password: ${DB_PASSWORD:nexo}
+    hikari:
+      maximum-pool-size: ${DB_POOL_SIZE:10}
+      minimum-idle: 2
+      connection-timeout: 10000
+      max-lifetime: 1800000
+
+  jpa:
+    open-in-view: false
+    hibernate:
+      ddl-auto: validate
+    properties:
+      hibernate:
+        jdbc:
+          time_zone: UTC
+          batch_size: 50
+        order_inserts: true
+        order_updates: true
+
+  flyway:
+    enabled: true
+    locations: classpath:db/migration
+
+  kafka:
+    bootstrap-servers: ${KAFKA_BOOTSTRAP_SERVERS:localhost:29093}
+    security:
+      protocol: ${KAFKA_SECURITY_PROTOCOL:PLAINTEXT}
+    producer:
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+      value-serializer: org.apache.kafka.common.serialization.StringSerializer
+      acks: all
+      properties:
+        enable.idempotence: true
+    consumer:
+      group-id: delivery
+      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      value-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      enable-auto-commit: false
+      auto-offset-reset: earliest
+    listener:
+      ack-mode: record
+
+  jackson:
+    default-property-inclusion: non_null
+    time-zone: UTC
+
+  threads:
+    virtual:
+      enabled: true
+
+  task:
+    scheduling:
+      pool:
+        size: ${SCHEDULING_POOL_SIZE:2}
+
+  lifecycle:
+    timeout-per-shutdown-phase: ${SHUTDOWN_TIMEOUT:30s}
+
+server:
+  port: ${SERVER_PORT:8095}
+  shutdown: graceful
+  forward-headers-strategy: framework
+  compression:
+    enabled: true
+    mime-types: application/json
+    min-response-size: 1024
+  error:
+    include-stacktrace: never
+    include-message: never
+
+nexo:
+  security:
+    jwt:
+      json-web-key-set-uri: ${JWT_JSON_WEB_KEY_SET_URI:}
+      secret: ${JWT_SECRET:}
+      issuer: ${JWT_ISSUER:nexo-authentication}
+    cors:
+      allowed-origins: ${CORS_ALLOWED_ORIGINS:http://localhost:4300}
+      allowed-methods: GET,POST,PUT,PATCH,DELETE,OPTIONS
+      allowed-headers: "*"
+      exposed-headers: X-Request-Id
+      allow-credentials: true
+      max-age: 3600
+  user-events:
+    topic: ${USER_EVENTS_TOPIC:nexo.authentication.user-events}
+    dead-letter-topic: ${USER_EVENTS_DEAD_LETTER_TOPIC:nexo.authentication.user-events.dlt}
+    replicas: ${KAFKA_TOPIC_REPLICAS:1}
+    concurrency: ${USER_EVENTS_CONCURRENCY:1}
+  authentication-service:
+    # Cliente de servicio (client_credentials) con el que este servicio llama a los demás.
+    base-url: ${AUTHENTICATION_SERVICE_BASE_URL:http://localhost:8090}
+    client-id: ${AUTHENTICATION_SERVICE_CLIENT_ID:c0000000-0000-0000-0000-000000000003}
+    client-secret: ${AUTHENTICATION_SERVICE_CLIENT_SECRET:nexo-delivery-dev-secret}
+    timeout: ${AUTHENTICATION_SERVICE_TIMEOUT:5s}
+  subscription-service:
+    base-url: ${SUBSCRIPTION_SERVICE_BASE_URL:http://localhost:8093}
+    timeout: ${SUBSCRIPTION_SERVICE_TIMEOUT:5s}
+  topic-service:
+    base-url: ${TOPIC_SERVICE_BASE_URL:http://localhost:8092}
+    timeout: ${TOPIC_SERVICE_TIMEOUT:5s}
+  content-service:
+    base-url: ${CONTENT_SERVICE_BASE_URL:http://localhost:8094}
+    timeout: ${CONTENT_SERVICE_TIMEOUT:10s}
+  collector-service:
+    base-url: ${COLLECTOR_SERVICE_BASE_URL:http://localhost:8097}
+    timeout: ${COLLECTOR_SERVICE_TIMEOUT:5s}
+    # Si un usuario pide su día y un tópico que sigue no tiene contenido, se recopila ese tópico al momento.
+    on-demand: ${ON_DEMAND_COLLECTION:true}
+    request-cooldown: ${ON_DEMAND_COLLECTION_COOLDOWN:30m}
+  events:
+    notification-commands-topic: ${NOTIFICATION_COMMANDS_TOPIC:nexo.notifications.commands}
+    relay-interval: ${OUTBOX_RELAY_INTERVAL:5s}
+    relay-batch-size: ${OUTBOX_RELAY_BATCH_SIZE:100}
+    relay-max-attempts: ${OUTBOX_RELAY_MAX_ATTEMPTS:10}
+  selection:
+    # Similitud con el historial del usuario a partir de la cual algo cuenta como repetido.
+    user-similarity-threshold: ${USER_SIMILARITY_THRESHOLD:0.88}
+    history-window: 60d
+    candidate-factor: 4
+    workers: ${DELIVERY_WORKERS:4}
+    schedule: ${DELIVERY_SCHEDULE:0 5 * * * *}
+  digest:
+    automatic-items: ${DIGEST_AUTOMATIC_ITEMS:10}
+    on-demand-items: ${DIGEST_ON_DEMAND_ITEMS:20}
+    maximum-wait: ${DIGEST_MAXIMUM_WAIT:6m}
+    detailed-summary-chars: 2200
+    per-run: 20
+  briefs:
+    window: 7d
+    batch-size: 100
+  monitoring:
+    username: ${MONITORING_USERNAME:prometheus}
+    password: ${MONITORING_PASSWORD:prometheus}
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics,prometheus
+  endpoint:
+    health:
+      probes:
+        enabled: true
+      show-details: when-authorized
+      group:
+        readiness:
+          include: readinessState,db
+        liveness:
+          include: livenessState
+  metrics:
+    tags:
+      application: ${spring.application.name}
+  tracing:
+    sampling:
+      probability: ${TRACING_SAMPLING_PROBABILITY:0.1}
+  otlp:
+    tracing:
+      endpoint: ${OTLP_TRACING_ENDPOINT:http://localhost:4318/v1/traces}
+      export:
+        enabled: ${TRACING_ENABLED:false}
+
+resilience4j:
+  retry:
+    instances:
+      subscription-service:
+        max-attempts: 3
+        wait-duration: 500ms
+        enable-exponential-backoff: true
+        exponential-backoff-multiplier: 2
+      topic-service:
+        max-attempts: 3
+        wait-duration: 500ms
+        enable-exponential-backoff: true
+        exponential-backoff-multiplier: 2
+      content-service:
+        max-attempts: 3
+        wait-duration: 500ms
+        enable-exponential-backoff: true
+        exponential-backoff-multiplier: 2
+      authentication-service:
+        max-attempts: 3
+        wait-duration: 500ms
+        enable-exponential-backoff: true
+        exponential-backoff-multiplier: 2
+  circuitbreaker:
+    instances:
+      subscription-service:
+        sliding-window-size: 20
+        minimum-number-of-calls: 10
+        failure-rate-threshold: 50
+        slow-call-duration-threshold: 30s
+        wait-duration-in-open-state: 30s
+      topic-service:
+        sliding-window-size: 20
+        minimum-number-of-calls: 10
+        failure-rate-threshold: 50
+        slow-call-duration-threshold: 30s
+        wait-duration-in-open-state: 30s
+      content-service:
+        sliding-window-size: 20
+        minimum-number-of-calls: 10
+        failure-rate-threshold: 50
+        slow-call-duration-threshold: 30s
+        wait-duration-in-open-state: 30s
+      authentication-service:
+        sliding-window-size: 20
+        minimum-number-of-calls: 10
+        failure-rate-threshold: 50
+        slow-call-duration-threshold: 30s
+        wait-duration-in-open-state: 30s
+
+springdoc:
+  api-docs:
+    path: /v3/api-docs
+    enabled: ${SWAGGER_ENABLED:true}
+  swagger-ui:
+    path: /swagger-ui.html
+    enabled: ${SWAGGER_ENABLED:true}
+    operations-sorter: alpha
+    tags-sorter: alpha
+
+logging:
+  level:
+    root: INFO
+    com.nexo: INFO

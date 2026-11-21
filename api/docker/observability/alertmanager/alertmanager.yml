@@ -1,0 +1,30 @@
+global:
+  resolve_timeout: 5m
+
+# Las alertas se ven en Alertmanager (http://localhost:9193) y en Grafana. Para recibirlas por correo, agregá en
+# cada receiver un email_configs con smarthost smtp.gmail.com:587, auth_username, auth_password (contraseña de
+# aplicación) y to: la dirección de guardia. Alertmanager no lee variables de entorno, así que van en este archivo.
+
+route:
+  receiver: default
+  group_by: ['alertname', 'service']
+  group_wait: 30s
+  group_interval: 5m
+  repeat_interval: 4h
+  routes:
+    - matchers: [severity="critical"]
+      receiver: critical
+      repeat_interval: 1h
+
+receivers:
+  - name: default
+  - name: critical
+
+inhibit_rules:
+  - source_matchers: [alertname="NotificationServiceDown"]
+    target_matchers: [service="notification"]
+    equal: ['service']
+
+  - source_matchers: [alertname="AuthenticationServiceDown"]
+    target_matchers: [service="authentication"]
+    equal: ['service']

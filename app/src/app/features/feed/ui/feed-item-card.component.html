@@ -1,0 +1,85 @@
+@let it = item();
+<article class="fic">
+  <a class="fic__media" [href]="it.originalUrl" target="_blank" rel="noopener" tabindex="-1" (click)="opened.emit(it)">
+    @if (it.imageUrl && !imageFailed()) {
+      <img [src]="it.imageUrl" alt="" loading="lazy" (error)="imageFailed.set(true)"/>
+    } @else {
+      <app-icon name="file-text" [size]="28" class="fic__placeholder"/>
+    }
+  </a>
+
+  <div class="fic__body">
+    <div class="fic__meta">
+      <span class="fic__topic">{{ it.topicName }}</span>
+      @if (it.relation === 'UPDATE') {
+        <app-badge tone="accent">{{ 'feed.item.update' | t }}</app-badge>
+      }
+      @if (showDate()) {
+        <span class="fic__date">{{ it.deliveryDate }}</span>
+      }
+    </div>
+
+    <h3 class="fic__title">
+      <a [href]="it.originalUrl" target="_blank" rel="noopener" (click)="opened.emit(it)">{{ title() }}</a>
+    </h3>
+    @if (expanded() && hasBrief()) {
+      <div class="fic__brief">
+        @for (p of paragraphs(); track $index) {
+          <p class="fic__paragraph">{{ p }}</p>
+        }
+        @if (keyPoints().length) {
+          <p class="fic__brief-label">{{ 'feed.item.keyPoints' | t }}</p>
+          <ul class="fic__points">
+            @for (point of keyPoints(); track $index) {
+              <li>{{ point }}</li>
+            }
+          </ul>
+        }
+        @if (whyItMatters()) {
+          <p class="fic__why"><strong>{{ 'feed.item.whyItMatters' | t }}</strong> {{ whyItMatters() }}</p>
+        }
+      </div>
+    } @else {
+      <p class="fic__summary">{{ summary() }}</p>
+    }
+
+    <div class="fic__foot">
+      @if (source()) {
+        <span class="fic__tag fic__tag--source" [style.--tag-color]="sourceColor()" [title]="it.sourceName ?? ''">
+          {{ source() }}
+        </span>
+      }
+      @if (it.publicationDate ?? it.collectedAt; as when) {
+        <span class="fic__tag" [title]="(it.publicationDate ? 'feed.item.published' : 'feed.item.collected') | t">
+          <app-icon name="clock" [size]="12"/>
+          {{ when | relativeTime }}
+        </span>
+      }
+      @if (it.readingMinutes) {
+        <span class="fic__tag" [title]="'feed.item.readingTimeHint' | t">
+          <app-icon name="book" [size]="12"/>
+          {{ 'feed.item.readingTime' | t: {minutes: it.readingMinutes} }}
+        </span>
+      }
+      <span class="fic__spacer"></span>
+
+      @if (hasBrief()) {
+        <button type="button" class="fic__expand" (click)="toggleExpanded()" [attr.aria-expanded]="expanded()">
+          <app-icon [name]="expanded() ? 'chevron-down' : 'file-text'" [size]="14"/>
+          {{ (expanded() ? 'feed.item.hideFull' : 'feed.item.readFull') | t }}
+        </button>
+      }
+
+      <button type="button" class="fic__action" (click)="toggleRead.emit(it)"
+              [attr.aria-label]="(it.readAt ? 'feed.item.markUnread' : 'feed.item.markRead') | t"
+              [title]="(it.readAt ? 'feed.item.markUnread' : 'feed.item.markRead') | t">
+        <app-icon [name]="it.readAt ? 'check-circle' : 'check'" [size]="16"/>
+      </button>
+      <button type="button" class="fic__action" [class.fic__action--on]="it.favorite" (click)="toggleFavorite.emit(it)"
+              [attr.aria-label]="(it.favorite ? 'feed.item.unfavorite' : 'feed.item.favorite') | t"
+              [title]="(it.favorite ? 'feed.item.unfavorite' : 'feed.item.favorite') | t">
+        <app-icon [name]="it.favorite ? 'star-filled' : 'star'" [size]="16"/>
+      </button>
+    </div>
+  </div>
+</article>

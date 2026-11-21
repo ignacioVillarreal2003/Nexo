@@ -1,0 +1,15 @@
+.src__loading {
+  display: grid;
+  place-items: center;
+  padding: var(--space-section);
+}
+
+.src__url {
+  max-width: 360px;
+  word-break: break-all;
+}
+
+code {
+  font-family: ui-monospace, 'SFMono-Regular', Menlo, monospace;
+  font-size: 12px;
+}

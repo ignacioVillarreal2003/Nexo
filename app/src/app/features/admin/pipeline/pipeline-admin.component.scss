@@ -1,0 +1,87 @@
+@use 'mixins' as *;
+
+.pip__running {
+  padding: 10px 14px;
+  margin-bottom: var(--space-lg);
+  border-radius: var(--radius-md);
+  background: color-mix(in srgb, var(--accent) 10%, var(--surface));
+  color: var(--accent);
+  @include type-caption;
+}
+
+.pip__stats {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: var(--space-md);
+  margin-bottom: var(--space-xl);
+}
+
+.pip__stat {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.pip__stat-value {
+  @include type-display-md;
+  font-variant-numeric: tabular-nums;
+}
+
+.pip__stat-label {
+  @include type-caption;
+  color: var(--text-muted);
+}
+
+.pip__section {
+  margin-bottom: var(--space-xl);
+}
+
+.pip__title-row {
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+}
+
+.pip__title {
+  @include type-tagline;
+  margin: 0 0 var(--space-sm);
+}
+
+.pip__hint {
+  @include type-caption;
+  color: var(--text-subtle);
+  margin: calc(-1 * var(--space-xs)) 0 var(--space-sm);
+}
+
+.pip__chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.pip__message {
+  max-width: 520px;
+  word-break: break-word;
+}
+
+.pip__progress {
+  width: 96px;
+  height: 4px;
+  margin-top: 6px;
+  overflow: hidden;
+  border-radius: var(--radius-full, 999px);
+  background: var(--surface-muted);
+}
+
+.pip__progress-bar {
+  height: 100%;
+  background: var(--accent);
+  transition: width 0.4s ease;
+}
+
+.pip__progress-label {
+  display: block;
+  margin-top: 2px;
+  color: var(--text-muted);
+  @include type-caption;
+}
